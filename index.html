@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lost & Found Report Form (File Download)</title>
-    <!-- Load Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Use Inter font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <style>
         body {
@@ -22,14 +20,12 @@
         <p class="text-white ml-4 text-lg font-medium">Initializing Application...</p>
     </div>
 
-    <!-- Main Application Container -->
-    <div id="app" class="min-h-screen p-4 sm:p-8 pt-16 flex justify-center items-start">
+    <div id="app" class="min-h-screen p-4 sm:p-8 pt-16 flex justify-center items-start hidden">
 
-        <!-- Submission Form (Full Width Focus) -->
-        <div class="w-full max-w-xl p-6 bg-white rounded-xl shadow-2xl">
+        <div class="w-full max-w-xl p-6 bg-white rounded-xl shadow-2xl h-fit">
             <header class="text-center mb-6">
-                <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Campus Lost & Found Report (File Download)</h1>
-                <p class="text-sm text-gray-500 font-bold text-red-600">Reports are stored ONLY in this browser session until you click "Download Reports".</p>
+                <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Campus Lost & Found Report</h1>
+                <p class="text-sm text-gray-500 font-bold text-red-600">Reports are stored ONLY in this browser session.</p>
                 <p id="report-count" class="text-xs text-gray-400 font-mono mt-2">Reports in session: 0</p>
             </header>
             
@@ -57,6 +53,12 @@
                     <label for="location" class="block text-sm font-medium text-gray-700">Location (Where it was Lost/Found)</label>
                     <input type="text" id="location" name="location" required maxlength="100" placeholder="e.g., Library 3rd floor, Cafeteria table 5" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border">
                 </div>
+
+                <div>
+                    <label for="photoFile" class="block text-sm font-medium text-gray-700">Upload Photo (Optional)</label>
+                    <input type="file" id="photoFile" name="photoFile" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <p class="text-xs text-gray-400 mt-1">Image data will be stored as text (Base64) in the session.</p>
+                </div>
                 
                 <div>
                     <label for="description" class="block text-sm font-medium text-gray-700">Detailed Description</label>
@@ -78,9 +80,9 @@
                 Download Reports (reports.txt)
             </button>
         </div>
+        
     </div>
     
-    <!-- Custom Modal for Messages (Success/Error) -->
     <div id="custom-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-3xl p-6 w-full max-w-sm transform transition-all scale-100 opacity-100">
             <div id="modal-icon" class="text-3xl mb-4 text-center"></div>
@@ -92,10 +94,9 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
     <script type="module">
-        // --- GLOBAL STATE & REFERENCES ---
-        let reports = []; // Temporary array to hold reports for the current session
+        
+        let reports = []; 
 
         const itemForm = document.getElementById('item-form');
         const formError = document.getElementById('form-error');
@@ -105,7 +106,7 @@
         const downloadBtn = document.getElementById('download-btn');
         const reportCountDisplay = document.getElementById('report-count');
 
-        // --- UTILITIES ---
+        
 
         function updateReportCount() {
             reportCountDisplay.textContent = `Reports in session: ${reports.length}`;
@@ -142,42 +143,79 @@
             dateInput.value = `${year}-${month}-${day}`;
         }
         
-        // --- FILE DOWNLOAD LOGIC ---
+        
 
-        /**
-         * Converts the current reports array to a JSON string and forces a download.
-         */
+        
+
         function downloadReports() {
             if (reports.length === 0) {
                 showModal("No Reports", "There are no reports in the current session to download.", "info");
                 return;
             }
 
-            const dataString = JSON.stringify(reports, null, 2); // Format JSON nicely
-            const blob = new Blob([dataString], { type: 'text/plain' });
+            let dataTXT = `Lost and Found Reports - Generated ${new Date().toLocaleString()}\n`;
+            dataTXT += "=================================================================\n\n";
+
+            for (const report of reports) {
+                
+                dataTXT += `Report ID: ${report.id}\n`;
+                dataTXT += `-------------------------------------------------\n`;
+                dataTXT += `Item Type: ${report.type}\n`;
+                dataTXT += `Item Name: ${report.name}\n`;
+                dataTXT += `Date of Incident: ${report.date}\n`;
+                dataTXT += `Location: ${report.location}\n`;
+                dataTXT += `Photo Data (Base64): ${report.photoData ? 'PRESENT' : 'N/A'}\n`; 
+                dataTXT += `Description: ${report.description}\n`;
+                dataTXT += `Contact: ${report.contact}\n`;
+                dataTXT += `Status: ${report.status}\n`;
+                dataTXT += `Report Time: ${report.timestamp}\n\n`;
+                dataTXT += "=================================================================\n\n";
+            }
             
-            // Create a temporary link element to trigger the download
+            const blob = new Blob([dataTXT], { type: 'text/plain' });
+            
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `lost_and_found_reports_${new Date().toISOString().slice(0, 10)}.txt`;
             
-            // Append to body, click, and remove
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
 
-            showModal("Download Complete", `${reports.length} reports saved to file.`, "success");
+            showModal("Download Complete", `${reports.length} reports saved to a human-readable text file.`, "success");
         }
 
 
-        // --- FORM SUBMISSION LOGIC (using Session Array) ---
+        
 
-        /**
-         * Handles the submission of the item form and saves data to the session array.
-         */
+        
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file); 
+            });
+        }
+
+
         async function handleFormSubmit(event) {
             event.preventDefault();
             formError.classList.add('hidden');
+
+            const fileInput = itemForm.elements['photoFile'];
+            let photoData = null;
+
+            if (fileInput.files.length > 0) {
+                try {
+                    
+                    photoData = await fileToBase64(fileInput.files[0]);
+                } catch (error) {
+                    formError.textContent = `Error reading file: ${error.message}. Please try a smaller image.`;
+                    formError.classList.remove('hidden');
+                    return;
+                }
+            }
 
             const data = {
                 id: Date.now(),
@@ -185,9 +223,10 @@
                 name: itemForm.elements['name'].value.trim(),
                 date: itemForm.elements['date'].value, 
                 location: itemForm.elements['location'].value.trim(),
+                photoData: photoData, 
                 description: itemForm.elements['description'].value.trim(),
                 contact: itemForm.elements['contact'].value.trim(),
-                timestamp: new Date().toISOString(),
+                timestamp: new Date().toLocaleString(),
                 status: 'Active', 
             };
 
@@ -207,9 +246,10 @@
             }
 
             try {
-                // Save the report to the current session's array
+                
                 reports.push(data);
                 updateReportCount();
+                
 
                 showModal(
                     "Report Submitted", 
@@ -228,7 +268,7 @@
             }
         }
 
-        // --- INITIALIZATION ---
+        
 
         function initializeApp() {
             initializeFormDefaults();
@@ -237,11 +277,11 @@
             appContainer.classList.remove('hidden');
         }
 
-        // Attach event listeners and start
+        
         itemForm.addEventListener('submit', handleFormSubmit);
         downloadBtn.addEventListener('click', downloadReports);
 
-        // Start the initialization process
+        
         initializeApp();
     </script>
 </body>
