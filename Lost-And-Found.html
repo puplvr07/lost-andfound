@@ -219,7 +219,7 @@
                 
                 // Set default status/approval for the full system logic
                 status: 'Active', 
-                approved: true, // CHANGE: Now instantly approved
+                approved: true, // Now instantly approved
                 category: 'Uncategorized', 
                 
                 reporterId: userId,
@@ -248,7 +248,7 @@
 
                 showModal(
                     "Report Submitted", 
-                    `${data.type} report for "${data.name}" has been successfully saved and is immediately public.`, // CHANGE: Updated success message
+                    `${data.type} report for "${data.name}" has been successfully saved and is immediately public.`, 
                     "success"
                 );
                 itemForm.reset(); // Clear the form
