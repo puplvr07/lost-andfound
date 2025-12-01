@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8"/>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+	<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+	<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+
+<script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: "#4f46e5",
+                light: "#6366f1",
+              },
+              secondary: "#ec4899",
+              "background-light": "#f8fafc",
+            },
+            fontFamily: {
+              display: ["Quicksand", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              xl: '1rem',
+            },
+          },
+        },
+      };
+  </script>
+
+	
+	<script>
+	const initialItems = [
+        {name: "Red Water Bottle", category: "Water Bottles", type: "Lost", date: "2025-11-28", location: "Gym", contact: "contact@example.com", description: "Stainless steel, small scratch on the side.", img: "https://via.placeholder.com/150/ef4444/ffffff?text=Bottle"},
+        {name: "iPhone 13 (Found)", category: "Electronics", type: "Found", date: "2025-11-29", location: "Library Desk", contact: "admin@example.com", description: "Black case, cracked screen protector.", img: "https://via.placeholder.com/150/4f46e5/ffffff?text=Phone"},
+        {name: "Black Leather Wallet", category: "Wallet", type: "Lost", date: "2025-11-30", location: "Cafeteria", contact: "user@example.com", description: "Contains student ID, no cash.", img: "https://via.placeholder.com/150/1f2937/ffffff?text=Wallet"}
+    ];
+    
+    function loadDynamicItems() {
+        const storedItems = localStorage.getItem('submittedReports');
+        try {
+            return storedItems ? JSON.parse(storedItems) : [];
+        } catch (e) {
+            console.error("Error parsing stored reports:", e);
+            return [];
+        }
+    }
+
+    const dynamicItems = loadDynamicItems();
+
+    const allItems = [...initialItems, ...dynamicItems];
+
+	function searchItems() {
+        const text = document.getElementById("searchInput").value.toLowerCase();
+        const category = document.getElementById("categoryInput").value;
+        const grid = document.getElementById("resultsGrid");
+
+        const results = allItems.filter(item =>
+            (item.name.toLowerCase().includes(text) || item.description.toLowerCase().includes(text)) &&
+            (category === "" || item.category === category)
+        );
+
+        grid.innerHTML = results.length
+            ? results.map(item => {
+                const typeColor = item.type === 'Lost' ? 'text-red-600' : 'text-green-600';
+                const typeBg = item.type === 'Lost' ? 'bg-red-100' : 'bg-green-100';
+                const imageSrc = item.img || "https://via.placeholder.com/150/aaaaaa/ffffff?text=No+Image";
+
+                return `
+                <div class="card">
+                    <img src="${imageSrc}" alt="${item.name}">
+                    <div class="p-2">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-lg font-bold">${item.name}</h3>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${typeBg} ${typeColor}">${item.type}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">${item.category} | Lost/Found: ${item.date}</p>
+                        <p class="text-sm text-gray-700 truncate">${item.description}</p>
+                    </div>
+                </div>`;
+            }).join("")
+            : "<p class='text-center text-xl text-gray-500 col-span-full mt-10'>No items found matching your search criteria.</p>";
+	}
+
+    window.onload = searchItems;
+
+	</script>
+
+  <title>Search and Listing Page</title>
+
+  <style>
+	body {
+ 	font-family: 'Quicksand', sans-serif;
+	background: #f8fafc;
+	}
+
+	.search {
+	width: 100%;
+	background: white;
+	padding: 30px;
+	display: flex;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	justify-content: center;
+	gap: 5px;
+	}
+
+	.search input[type="text"] {
+	width: 280px;
+	padding: 10px 14px;
+	border: 1px solid #bfbfbf;
+	border-radius: 6px;
+	font-size: 20px;
+	outline: none;
+	}
+
+	.search button {
+	padding: 10px 16px;
+	background: #4f46e5;
+	border: none;
+	color: #fff;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 20px;
+	}
+
+	.search button:hover {
+      background: #6366f1;
+	}
+
+	.search select {
+ 	padding: 10px 45px;
+	font-size: 20px;
+	border: 1px solid #bfbfbf;
+	border-radius: 6px;
+	outline: none;
+	}
+
+	.grid {
+	margin: 30px auto;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 20px;
+	width: 90%;
+	max-width: 1200px;
+	}
+
+	.card {
+	background: white;
+	border-radius: 10px;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+	text-align: left;
+	}
+
+	.card img {
+	width: 100%;
+	height: 150px;
+	object-fit: cover;
+	border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+	}
+</style>
+
+</head>
+
+<body>
+
+<header class="p-4 sm:px-6 flex justify-between items-center bg-background-light/80 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200">
+  <div class="flex items-center space-x-2">
+    <span class="material-icons text-primary text-3xl">fmd_good</span>
+    <span class="font-bold text-xl">Lost and Found</span>
+  </div>
+
+  <nav class="hidden md:flex items-center space-x-6">
+    <a class="text-slate-600 hover:text-primary transition-colors font-medium" href="#">Home</a>
+    <a class="text-slate-600 hover:text-primary transition-colors font-medium" href="report_form.html">Create a Post</a>
+  </nav>
+
+  <button class="p-2 rounded-full hover:bg-slate-200 md:hidden" id="menu-button">
+    <span class="material-icons text-3xl">menu</span>
+  </button>
+</header>
+
+<div class="fixed inset-0 bg-background-light z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden" id="mobile-menu">
+ 
+    <div class="flex justify-between items-center p-4 border-b border-slate-200 ">
+      <div class="flex items-center space-x-2">
+        <span class="material-icons text-primary text-3xl">fmd_good</span>
+        <span class="font-bold text-xl">Lost and Found</span>
+      </div>
+   
+      <button class="p-2 rounded-full hover:bg-slate-200 " id="close-menu-button">
+        <span class="material-icons text-3xl">close</span>
+      </button>
+    </div>
+
+  <nav class="flex flex-col p-4 space-y-4">
+    <a class="block px-4 py-3 rounded-lg text-lg hover:bg-slate-100" href="#">Home</a>
+    <a class="block px-4 py-3 rounded-lg text-lg hover:bg-slate-100" href="report_form.html">Create a Post</a>
+  </nav>
+</div>
+
+
+<div class="search">
+	<input id="searchInput" type="text" placeholder="What are you looking for?" onkeyup="searchItems()">
+	<select id="categoryInput" onchange="searchItems()">
+	<option value="">Select a category</option>
+	<option>Wallet</option>
+	<option>Keychain</option>
+	<option>Electronics</option>
+	<option>Accessories</option>
+	<option>Wardrobe</option>
+	<option>Water Bottles</option>
+	<option>Stationery</option>
+	<option>IDs</option>
+	</select>
+	<button onclick="searchItems()">Search</button>
+</div>
+
+<div id="resultsGrid" class="grid"></div>
+
+</body>
+
+</html>
