@@ -3,102 +3,316 @@
 
 <head>
 	<meta charset="utf-8" />
-	<meta content="width=device-width, initial-scale=1.0" name="viewport" />
-
-	<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<script src="https://cdn.tailwindcss.com"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-	<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
-
-
-	  <title>Search and Listing Page</title>
-	<link rel="stylesheet" href="index-style.css">
+	<title>Lost & Found Portal</title>
 </head>
 
-<body>
+<body class="bg-slate-100 min-h-screen">
 
-	<header
-		class="p-4 sm:px-6 flex justify-between items-center bg-background-light/80 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200">
-		  <div class="flex items-center space-x-2">
-			    <span class="material-icons text-primary text-3xl">fmd_good</span>
-			    <span class="font-bold text-xl">Lost and Found</span>
-			  </div>
+	<!-- AUTH CONTAINER -->
+	<div id="auth-container" class="flex items-center justify-center min-h-screen p-4">
+		<div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 space-y-6">
 
-		  <nav class="hidden md:flex items-center space-x-6">
-			    <a class="text-slate-600 hover:text-primary transition-colors font-medium" href="#">Home</a>
-			    <a class="text-slate-600 hover:text-primary transition-colors font-medium"
-				href="report_form.html">Create a Post</a>
-			  </nav>
+			<!-- LOGIN VIEW -->
+			<div id="login-view" class="space-y-4">
+				<h2 class="text-2xl font-bold text-center text-slate-800">Welcome Back</h2>
+				<p class="text-sm text-center text-slate-500">Log in to access the Lost & Found portal.</p>
 
-		  <button class="p-2 rounded-full hover:bg-slate-200 md:hidden" id="menu-button">
-			    <span class="material-icons text-3xl">menu</span>
-			  </button>
-	</header>
+				<div class="space-y-3">
+					<input type="email" id="login-email" placeholder="Email address"
+						class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-	<div class="fixed inset-0 bg-background-light z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden"
-		id="mobile-menu">
-		 
-		    <div class="flex justify-between items-center p-4 border-b border-slate-200 ">
-			      <div class="flex items-center space-x-2">
-				        <span class="material-icons text-primary text-3xl">fmd_good</span>
-				        <span class="font-bold text-xl">Lost and Found</span>
-				      </div>
-			   
-			      <button class="p-2 rounded-full hover:bg-slate-200 " id="close-menu-button">
-				        <span class="material-icons text-3xl">close</span>
-				      </button>
-			    </div>
+					<!-- Password Input with Eye Icon Toggle -->
+					<div class="relative flex items-center">
+						<input type="password" id="login-password" placeholder="Password"
+							class="w-full px-4 py-2 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+						<button type="button" id="login-eye-btn"
+							class="absolute right-3 px-2 py-1 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer z-50">
+							<i id="login-eye-icon" class="fa-solid fa-eye-slash"></i>
+						</button>
+					</div>
 
-		  <nav class="flex flex-col p-4 space-y-4">
-			    <a class="block px-4 py-3 rounded-lg text-lg hover:bg-slate-100" href="#">Home</a>
-			    <a class="block px-4 py-3 rounded-lg text-lg hover:bg-slate-100" href="report_form.html">Create a
-				Post</a>
-			  </nav>
+					<p id="login-error" class="text-xs text-red-500 hidden font-medium"></p>
+				</div>
+
+				<button id="login-btn" type="button"
+					class="w-full py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+					Log In
+				</button>
+
+				<p class="text-sm text-center text-slate-600">
+					Don't have an account?
+					<button id="to-signup-btn" type="button"
+						class="text-blue-600 font-semibold hover:underline focus:outline-none">Sign up instead</button>
+				</p>
+			</div>
+
+			<!-- SIGN UP VIEW (Hidden by default) -->
+			<div id="signup-view" class="space-y-4" style="display: none;">
+				<h2 class="text-2xl font-bold text-center text-slate-800">Create Account</h2>
+				<p class="text-sm text-center text-slate-500">Join the Lost & Found portal community.</p>
+
+				<div class="space-y-3">
+					<!-- Email Input -->
+					<input type="email" id="signup-email" placeholder="Email address"
+						class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+					<p id="email-hint" class="text-xs text-slate-400 font-medium hidden">Must be a valid email (e.g.,
+						name@domain.com)</p>
+
+					<!-- Password Input with Eye Icon Toggle -->
+					<div class="relative flex items-center">
+						<input type="password" id="signup-password" placeholder="Password"
+							class="w-full px-4 py-2 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+						<button type="button" id="signup-eye-btn"
+							class="absolute right-3 px-2 py-1 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer z-50">
+							<i id="eye-icon" class="fa-solid fa-eye-slash"></i>
+						</button>
+					</div>
+
+					<!-- Live Requirement Checklist (Hidden initially) -->
+					<div id="password-checklist"
+						class="bg-slate-50 p-3 rounded-lg space-y-1 text-xs border border-slate-200 hidden">
+						<p class="font-semibold text-slate-700 mb-1">Password must contain:</p>
+						<p id="req-length" class="text-slate-400 transition-colors">• At least 8 characters</p>
+						<p id="req-uppercase" class="text-slate-400 transition-colors">• At least one uppercase letter
+							(A-Z)</p>
+						<p id="req-alphanumeric" class="text-slate-400 transition-colors">• Only letters and numbers (no
+							symbols)</p>
+					</div>
+
+					<p id="signup-error" class="text-xs text-red-500 hidden font-medium"></p>
+				</div>
+
+				<button id="signup-btn" type="button"
+					class="w-full py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer">
+					Sign Up
+				</button>
+
+				<p class="text-sm text-center text-slate-600">
+					Already have an account?
+					<button id="to-login-btn" type="button"
+						class="text-emerald-600 font-semibold hover:underline focus:outline-none">Log in
+						instead</button>
+				</p>
+			</div>
+
+		</div>
 	</div>
 
-
-	<div class="search">
-		<input id="searchInput" type="text" placeholder="What are you looking for?" onkeyup="searchItems()">
-		<select id="categoryInput" onchange="searchItems()">
-			<option value="">Select a category</option>
-			<option>Wallet</option>
-			<option>Keychain</option>
-			<option>Electronics</option>
-			<option>Accessories</option>
-			<option>Wardrobe</option>
-			<option>Water Bottles</option>
-			<option>Stationery</option>
-			<option>IDs</option>
-		</select>
-		<button onclick="searchItems()">Search</button>
+	<!-- MAIN PORTAL CONTAINER -->
+	<div id="portal-container" style="display: none;">
+		<header
+			class="p-4 sm:px-6 flex justify-between items-center bg-white border-b border-slate-200 sticky top-0 z-20">
+			<div class="flex items-center space-x-2">
+				<span class="font-bold text-xl text-indigo-600">Lost and Found</span>
+			</div>
+			<nav class="flex items-center space-x-6">
+				<a class="text-slate-600 hover:text-indigo-600 font-medium" href="#">Home</a>
+				<button id="logout-btn" type="button" class="text-red-600 hover:text-red-700 font-medium">Log
+					Out</button>
+			</nav>
+		</header>
+		<div id="resultsGrid" class="grid p-6 max-w-6xl mx-auto gap-4"></div>
 	</div>
 
-	<div id="resultsGrid" class="grid"></div>
+	<!-- 1. INSTANT UI TOGGLES -->
+	<script>
+		window.addEventListener('DOMContentLoaded', () => {
+			const loginView = document.getElementById('login-view');
+			const signupView = document.getElementById('signup-view');
+			const toSignupBtn = document.getElementById('to-signup-btn');
+			const toLoginBtn = document.getElementById('to-login-btn');
 
+			toSignupBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				loginView.style.display = 'none';
+				signupView.style.display = 'block';
+			});
+
+			toLoginBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				signupView.style.display = 'none';
+				loginView.style.display = 'block';
+			});
+		});
+	</script>
+
+	<!-- 2. LIVE VALIDATION, EYE TOGGLE & FIREBASE LOGIC -->
+	<script type="module">
+
+		// --- PASSWORD SHOW/HIDE TOGGLE (CSP-safe: no inline onclick) ---
+		// Reusable setup — wires a specific eye button to a specific password
+		// input, instead of relying on an inline onclick attribute (which gets
+		// blocked by strict Content-Security-Policy headers on some dev servers).
+		function setupPasswordToggle(inputId, iconId, buttonId) {
+			const input = document.getElementById(inputId);
+			const icon = document.getElementById(iconId);
+			const btn = document.getElementById(buttonId);
+
+			btn.addEventListener('click', () => {
+				if (input.type === 'password') {
+					input.type = 'text';
+					icon.className = 'fa-solid fa-eye';
+				} else {
+					input.type = 'password';
+					icon.className = 'fa-solid fa-eye-slash';
+				}
+			});
+		}
+
+		setupPasswordToggle('signup-password', 'eye-icon', 'signup-eye-btn');
+		setupPasswordToggle('login-password', 'login-eye-icon', 'login-eye-btn');
+
+		const passwordInput = document.getElementById('signup-password');
+
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+		import {
+			getAuth,
+			createUserWithEmailAndPassword,
+			signInWithEmailAndPassword,
+			signOut,
+			onAuthStateChanged
+		} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+		import {
+			getFirestore,
+			doc,
+			setDoc
+		} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+		const firebaseConfig = {
+			apiKey: "AIzaSyDJuZdbS3vK9stg0lIgmYAM3KQnPhPjhA4",
+			authDomain: "lost-andfound-8f654.firebaseapp.com",
+			projectId: "lost-andfound-8f654",
+			storageBucket: "lost-andfound-8f654.firebasestorage.app",
+			messagingSenderId: "1053006563820",
+			appId: "1:1053006563820:web:9041225d6f4730242458c9",
+			measurementId: "G-BX4ZNYP9H5"
+		};
+
+		const app = initializeApp(firebaseConfig);
+		const auth = getAuth(app);
+		const db = getFirestore(app);
+
+		// --- FORM ELEMENTS ---
+		const emailInput = document.getElementById('signup-email');
+		const emailHint = document.getElementById('email-hint');
+		const signupBtn = document.getElementById('signup-btn');
+		const passwordChecklist = document.getElementById('password-checklist');
+		const signupError = document.getElementById('signup-error');
+
+		const reqLength = document.getElementById('req-length');
+		const reqUppercase = document.getElementById('req-uppercase');
+		const reqAlphanumeric = document.getElementById('req-alphanumeric');
+
+		// --- SIGN UP SUBMISSION WITH VALIDATION CHECK ---
+		signupBtn.addEventListener('click', async () => {
+			const emailVal = emailInput.value;
+			const passVal = passwordInput.value;
+
+			// 1. Validate Email (@ and dot check)
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			const isEmailValid = emailRegex.test(emailVal);
+
+			// 2. Validate Password Rules
+			const hasLength = passVal.length >= 8;
+			const hasUppercase = /[A-Z]/.test(passVal);
+			const isAlphanumeric = /^[A-Za-z0-9]*$/.test(passVal) && passVal.length > 0;
+			const isPasswordValid = hasLength && hasUppercase && isAlphanumeric;
+
+			// Reveal the checklist and email hints once they attempt to submit
+			emailHint.classList.remove('hidden');
+			passwordChecklist.classList.remove('hidden');
+
+			// Update Email Hint UI
+			if (isEmailValid) {
+				emailHint.className = "text-xs text-green-600 font-medium";
+				emailHint.innerText = "Valid email format ✓";
+			} else {
+				emailHint.className = "text-xs text-red-500 font-medium";
+				emailHint.innerText = "Please enter a real email address (e.g., name@domain.com)";
+			}
+
+			// Update Password Checklist UI (Red for fail, Green for pass)
+			updateRequirementUI(reqLength, hasLength, "At least 8 characters");
+			updateRequirementUI(reqUppercase, hasUppercase, "At least one uppercase letter (A-Z)");
+			updateRequirementUI(reqAlphanumeric, isAlphanumeric, "Only letters and numbers (no symbols)");
+
+			// If rules are not met, stop here and show general warning
+			if (!isEmailValid || !isPasswordValid) {
+				signupError.innerText = "Please fix the highlighted fields above before signing up.";
+				signupError.classList.remove('hidden');
+				return; // Stops execution, doesn't hit Firebase
+			}
+
+			// If everything is correct, hide errors and proceed to Firebase
+			signupError.classList.add('hidden');
+
+			try {
+				const userCredential = await createUserWithEmailAndPassword(auth, emailVal, passVal);
+				await setDoc(doc(db, "users", userCredential.user.uid), {
+					email: userCredential.user.email,
+					role: "user"
+				});
+				alert("Account created successfully!");
+			} catch (error) {
+				signupError.innerText = error.message.replace("Firebase: ", "");
+				signupError.classList.remove('hidden');
+			}
+		});
+
+		function updateRequirementUI(element, conditionMet, text) {
+			if (conditionMet) {
+				element.className = "text-green-600 transition-colors";
+				element.innerText = `• ${text} ✓`;
+			} else {
+				element.className = "text-red-500 transition-colors";
+				element.innerText = `• ${text}`;
+			}
+		}
+
+		// --- LOG IN BACKEND ---
+		document.getElementById('login-btn').addEventListener('click', async () => {
+			const email = document.getElementById('login-email').value;
+			const password = document.getElementById('login-password').value;
+			const errorElement = document.getElementById('login-error');
+			errorElement.classList.add('hidden');
+
+			try {
+				await signInWithEmailAndPassword(auth, email, password);
+			} catch (error) {
+				errorElement.innerText = error.message.replace("Firebase: ", "");
+				errorElement.classList.remove('hidden');
+			}
+		});
+
+		// --- LOG OUT ---
+		const logoutBtn = document.getElementById('logout-btn');
+		if (logoutBtn) {
+			logoutBtn.addEventListener('click', async () => {
+				try {
+					await signOut(auth);
+				} catch (error) {
+					console.error("Error logging out", error);
+				}
+			});
+		}
+
+		// --- GATEKEEPER ---
+		onAuthStateChanged(auth, (user) => {
+			const authContainer = document.getElementById('auth-container');
+			const portalContainer = document.getElementById('portal-container');
+
+			if (user) {
+				authContainer.style.display = 'none';
+				portalContainer.style.display = 'block';
+			} else {
+				authContainer.style.display = 'flex';
+				portalContainer.style.display = 'none';
+			}
+		});
+	</script>
 </body>
-<script src="script.js"></script>
-<script type="module">
-	// Import the functions you need from the SDKs you need
-	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-	import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
-	// TODO: Add SDKs for Firebase products that you want to use
-	// https://firebase.google.com/docs/web/setup#available-libraries
-
-	// Your web app's Firebase configuration
-	// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-	const firebaseConfig = {
-		apiKey: "AIzaSyDJuZdbS3vK9stg0lIgmYAM3KQnPhPjhA4",
-		authDomain: "lost-andfound-8f654.firebaseapp.com",
-		projectId: "lost-andfound-8f654",
-		storageBucket: "lost-andfound-8f654.firebasestorage.app",
-		messagingSenderId: "1053006563820",
-		appId: "1:1053006563820:web:9041225d6f4730242458c9",
-		measurementId: "G-BX4ZNYP9H5"
-	};
-
-	// Initialize Firebase
-	const app = initializeApp(firebaseConfig);
-	const analytics = getAnalytics(app);
-</script>
 
 </html>
