@@ -85,67 +85,44 @@ const allItems = [...initialItems, ...dynamicItems];
 
 
 function searchItems() {
-
-    const text = document.getElementById("searchInput").value.toLowerCase();
-
-    const category = document.getElementById("categoryInput").value;
-
+    const searchInput = document.getElementById("searchInput");
+    const categoryInput = document.getElementById("categoryInput");
     const grid = document.getElementById("resultsGrid");
 
+    // ADD THIS LINE: Stops it from crashing when the user is logged out and elements are hidden
+    if (!searchInput || !categoryInput || !grid) return;
 
+    const text = searchInput.value.toLowerCase();
+    const category = categoryInput.value;
 
     const results = allItems.filter(item =>
-
         (item.name.toLowerCase().includes(text) || item.description.toLowerCase().includes(text)) &&
-
         (category === "" || item.category === category)
-
     );
 
-
-
     grid.innerHTML = results.length
-
         ? results.map(item => {
-
             const typeColor = item.type === 'Lost' ? 'text-red-600' : 'text-green-600';
-
             const typeBg = item.type === 'Lost' ? 'bg-red-100' : 'bg-green-100';
-
             const imageSrc = item.img || "https://via.placeholder.com/150/aaaaaa/ffffff?text=No+Image";
 
-
-
             return `
-
-<div class="card">
-
-<img src="${imageSrc}" alt="${item.name}">
-
-<div class="p-2">
-
-<div class="flex justify-between items-start mb-1">
-
-<h3 class="text-lg font-bold">${item.name}</h3>
-
-<span class="text-xs font-semibold px-2 py-0.5 rounded-full ${typeBg} ${typeColor}">${item.type}</span>
-
-</div>
-
-<p class="text-xs text-gray-500 mb-2">${item.category} | Lost/Found: ${item.date}</p>
-
-<p class="text-sm text-gray-700 truncate">${item.description}</p>
-
-</div>
-
-</div>`;
-
+        <div class="card">
+            <img src="${imageSrc}" alt="${item.name}">
+                <div class="p-2">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-lg font-bold">${item.name}</h3>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${typeBg} ${typeColor}">${item.type}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2">${item.category} | Lost/Found: ${item.date}</p>
+                    <p class="text-sm text-gray-700 truncate">${item.description}</p>
+                </div>
+        </div>`;
         }).join("")
-
         : "<p class='text-center text-xl text-gray-500 col-span-full mt-10'>No items found matching your search criteria.</p>";
-
 }
 
 
 
 window.onload = searchItems;
+
