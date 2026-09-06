@@ -121,6 +121,25 @@
 
         
     <script type="module">
+        // 1. Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 2. Your project configuration keys
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJuZdbS3vK9stg0lIgmYAM3KQnPhPjhA4",
+            authDomain: "lost-andfound-8f654.firebaseapp.com",
+            projectId: "lost-andfound-8f654",
+            storageBucket: "lost-andfound-8f654.firebasestorage.app",
+            messagingSenderId: "1053006563820",
+            appId: "1:1053006563820:web:9041225d6f4730242458c9",
+            measurementId: "G-BX4ZNYP9H5"
+        };
+
+        // 3. Initialize Firebase and define 'db' globally for this script
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -130,25 +149,10 @@
             });
         }
 
-        function saveReportToLocalStorage(report) {
-            const storedReports = localStorage.getItem('submittedReports');
-            let reports = [];
-
-            if (storedReports) {
-                try {
-                    reports = JSON.parse(storedReports);
-                } catch (e) {
-                    console.error("Local Storage is corrupt. Starting fresh.", e);
-                }
-            }
-
-            reports.push(report);
-            localStorage.setItem('submittedReports', JSON.stringify(reports));
-        }
-
-
         async function handleFormSubmit(event) {
             event.preventDefault();
+            console.log("Button clicked! Form is listening.");
+
             const itemForm = document.getElementById('item-form');
             const formError = document.getElementById('form-error');
             formError.classList.add('hidden');
@@ -176,13 +180,21 @@
                 img: photoData,
                 description: itemForm.elements['description'].value.trim(),
                 contact: itemForm.elements['contact'].value.trim(),
+                createdAt: new Date()
             };
 
-            saveReportToLocalStorage(data);
+            try {
+                // Now 'db' is safely recognized here!
+                await addDoc(collection(db, "reports"), data);
 
-            alert(`Report for "${data.name}" submitted successfully! It is now visible on the Search Page.`);
-            itemForm.reset();
-            window.location.href = "search_listing.html";
+                alert(`Report for "${data.name}" submitted successfully to the cloud!`);
+                itemForm.reset();
+
+            } catch (error) {
+                console.error("Error saving to Firestore:", error);
+                formError.textContent = `Error saving to cloud: ${error.message}`;
+                formError.classList.remove('hidden');
+            }
         }
 
         function initializeFormDefaults() {
