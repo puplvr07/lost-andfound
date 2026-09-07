@@ -6,19 +6,19 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<script src="https://cdn.tailwindcss.com"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<title>Lost & Found Portal</title>
+	<title>Lost & Found</title>
 </head>
 
 <body class="bg-slate-100 min-h-screen">
 
-	<!-- AUTH CONTAINER (Login / Signup) -->
+	<!-- Authentication Container (Login/Sign-Up)  -->
 	<div id="auth-container" class="flex items-center justify-center min-h-screen p-4">
 		<div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 space-y-6">
 
-			<!-- LOGIN VIEW -->
+			<!-- Login View-->
 			<div id="login-view" class="space-y-4">
-				<h2 class="text-2xl font-bold text-center text-slate-800">Welcome Back</h2>
-				<p class="text-sm text-center text-slate-500">Log in to access the Lost & Found portal.</p>
+				<h2 class="text-2xl font-bold text-center text-slate-800">Welcome to Lost & Found</h2>
+				<p class="text-sm text-center text-slate-500">Log in to access the portal.</p>
 
 				<div class="space-y-3">
 					<input type="email" id="login-email" placeholder="Email address"
@@ -32,7 +32,15 @@
 							class="absolute right-3 px-2 py-1 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer z-50">
 							<i id="login-eye-icon" class="fa-solid fa-eye-slash"></i>
 						</button>
+
 					</div>
+					<div class="flex justify-end">
+						<button id="forgot-password-btn" type="button"
+							class="text-xs text-blue-600 hover:underline focus:outline-none">
+							Forgot Password?
+						</button>
+					</div>
+					<p id="forgot-password-msg" class="text-xs text-center hidden font-medium"></p>
 
 					<p id="login-error" class="text-xs text-red-500 hidden font-medium"></p>
 				</div>
@@ -171,7 +179,8 @@
 			createUserWithEmailAndPassword,
 			signInWithEmailAndPassword,
 			signOut,
-			onAuthStateChanged
+			onAuthStateChanged,
+			sendPasswordResetEmail
 		} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 		import {
 			getFirestore,
@@ -385,7 +394,36 @@
 				authContainer.style.display = 'flex';
 				portalContainer.style.display = 'none';
 			}
-		});
+		})
+
+		// --- FORGOT PASSWORD LOGIC ---
+		const forgotBtn = document.getElementById('forgot-password-btn');
+		const forgotMsg = document.getElementById('forgot-password-msg');
+
+		if (forgotBtn) {
+			forgotBtn.addEventListener('click', async () => {
+				const emailInput = document.getElementById('login-email');
+				const email = emailInput ? emailInput.value.trim() : "";
+
+				forgotMsg.classList.remove('hidden');
+
+				if (!email) {
+					forgotMsg.className = "text-xs text-center text-red-500 font-medium";
+					forgotMsg.innerText = "Please enter your email address in the box above first.";
+					return;
+				}
+
+				try {
+					await sendPasswordResetEmail(auth, email);
+					forgotMsg.className = "text-xs text-center text-green-600 font-medium";
+					forgotMsg.innerText = "Password reset email sent! Check your inbox.";
+				} catch (error) {
+					forgotMsg.className = "text-xs text-center text-red-500 font-medium";
+					forgotMsg.innerText = error.message.replace("Firebase: ", "");
+				}
+			});
+		}
+		;
 	</script>
 </body>
 
