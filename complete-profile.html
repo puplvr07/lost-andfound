@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Complete Your Profile - Lost & Found</title>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-slate-200">
+        <div class="text-center space-y-2">
+            <div
+                class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold shadow-inner">
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800">Complete Your Profile</h1>
+            <p class="text-sm text-slate-500">Please provide your permanent campus credentials to finish setting up your
+                account.</p>
+        </div>
+
+        <form id="complete-form" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Student ID</label>
+                <input type="text" id="student-id" required placeholder="e.g., 2026-12345"
+                    class="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm border-slate-300">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Course / Program</label>
+                <input type="text" id="course-name" required placeholder="e.g., BS Computer Science"
+                    class="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm border-slate-300">
+            </div>
+
+            <p id="form-error" class="text-xs text-red-500 font-medium hidden text-center"></p>
+
+            <button type="submit"
+                class="w-full py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-md cursor-pointer text-sm">
+                Save & Continue to Portal
+            </button>
+        </form>
+    </div>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJuZdbS3vK9stg0lIgmYAM3KQnPhPjhA4",
+            authDomain: "lost-andfound-8f654.firebaseapp.com",
+            projectId: "lost-andfound-8f654",
+            storageBucket: "lost-andfound-8f654.firebasestorage.app",
+            messagingSenderId: "1053006563820",
+            appId: "1:1053006563820:web:9041225d6f4730242458c9",
+            measurementId: "G-BX4ZNYP9H5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Security check: If not logged in, boot back to index
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // If they already have a studentId saved, skip this page automatically
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().studentId) {
+                    window.location.href = 'index.html';
+                }
+            } catch (err) {
+                console.error("Error checking user profile:", err);
+            }
+        });
+
+        // Handle Form Submission
+        document.getElementById('complete-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentIdVal = document.getElementById('student-id').value.trim();
+            const courseVal = document.getElementById('course-name').value.trim();
+            const errorEl = document.getElementById('form-error');
+            errorEl.classList.add('hidden');
+
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                errorEl.innerText = "Session expired. Please log in again.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                // Permanently update their document with studentId and course
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    email: currentUser.email,
+                    studentId: studentIdVal,
+                    course: courseVal,
+                    role: "user"
+                }, { merge: true });
+
+                // Redirect back to main portal once saved
+                window.location.href = 'index.html';
+            } catch (err) {
+                errorEl.innerText = err.message;
+                errorEl.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -121,8 +121,9 @@
 
         
     <script type="module">
-        // 1. Import Firebase SDKs
+        // 1. Import Firebase SDKs (Added getAuth here)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // 2. Your project configuration keys
@@ -136,8 +137,9 @@
             measurementId: "G-BX4ZNYP9H5"
         };
 
-        // 3. Initialize Firebase and define 'db' globally for this script
+        // 3. Initialize Firebase, Auth, and Firestore
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
         function fileToBase64(file) {
@@ -151,8 +153,6 @@
 
         async function handleFormSubmit(event) {
             event.preventDefault();
-            console.log("Button clicked! Form is listening.");
-
             const itemForm = document.getElementById('item-form');
             const formError = document.getElementById('form-error');
             formError.classList.add('hidden');
@@ -170,8 +170,35 @@
                 }
             }
 
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                alert("You must be logged in to submit a report.");
+                return;
+            }
+
+            // Fetch current user's profile details to attach to the report
+            let userStudentId = "Student";
+            let userCourse = "";
+            let userProfilePic = "";
+            try {
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDoc.exists()) {
+                    const uData = userDoc.data();
+                    userStudentId = uData.studentId || "Student";
+                    userCourse = uData.course || "";
+                    userProfilePic = uData.profilePic || "";
+                }
+            } catch (err) {
+                console.error("Error fetching poster details:", err);
+            }
+
             const data = {
                 id: Date.now(),
+                userId: currentUser.uid,
+                posterStudentId: userStudentId,
+                posterCourse: userCourse,
+                posterPic: userProfilePic,
+                posterEmail: currentUser.email,
                 type: itemForm.elements['type'].value,
                 name: itemForm.elements['name'].value.trim(),
                 category: itemForm.elements['category'].value,
@@ -184,12 +211,9 @@
             };
 
             try {
-                // Now 'db' is safely recognized here!
                 await addDoc(collection(db, "reports"), data);
-
-                alert(`Report for "${data.name}" submitted successfully to the cloud!`);
+                alert(`Report for "${data.name}" submitted successfully!`);
                 itemForm.reset();
-
             } catch (error) {
                 console.error("Error saving to Firestore:", error);
                 formError.textContent = `Error saving to cloud: ${error.message}`;

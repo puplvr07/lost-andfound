@@ -12,7 +12,7 @@
 <body class="bg-slate-100 min-h-screen">
 
 	<!-- Authentication Container (Login/Sign-Up)  -->
-	<div id="auth-container" class="flex items-center justify-center min-h-screen p-4">
+	<div id="auth-container" class="flex items-center justify-center min-h-screen p-4" style="display: none;">
 		<div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 space-y-6">
 
 			<!-- Login View-->
@@ -69,6 +69,14 @@
 					<p id="email-hint" class="text-xs text-slate-400 font-medium hidden">Must be a valid email (e.g.,
 						name@domain.com)</p>
 
+					<!-- Student ID Input -->
+					<input type="text" id="signup-studentid" placeholder="Student ID (e.g., 2026-12345)"
+						class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+
+					<!-- Course Input -->
+					<input type="text" id="signup-course" placeholder="Course / Program (e.g., BS Computer Science)"
+						class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+
 					<!-- Password Input with Eye Icon Toggle -->
 					<div class="relative flex items-center">
 						<input type="password" id="signup-password" placeholder="Password"
@@ -116,11 +124,41 @@
 			<div class="flex items-center space-x-2">
 				<span class="font-bold text-xl text-indigo-600">Lost and Found Portal</span>
 			</div>
-			<nav class="flex items-center space-x-6">
+			<nav class="flex items-center space-x-6 relative">
 				<a class="text-slate-600 hover:text-indigo-600 font-medium" href="#">Home</a>
 				<a class="text-slate-600 hover:text-indigo-600 font-medium" href="report_form.html">Create a Post</a>
-				<button id="logout-btn" type="button"
-					class="text-red-600 hover:text-red-700 font-medium cursor-pointer">Log Out</button>
+
+				<!-- Profile Avatar & Dropdown Container -->
+				<div class="relative">
+					<button id="profile-menu-btn" type="button"
+						class="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
+						<!-- Displayed if custom pic exists -->
+						<img id="user-avatar-img" src="" alt="Profile" class="w-full h-full object-cover hidden">
+						<!-- Fallback displayed if no pic: First letter of email -->
+						<span id="user-avatar-letter" class="text-sm">U</span>
+					</button>
+
+					<!-- Dropdown Menu (Hidden by default) -->
+					<div id="profile-dropdown"
+						class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1 hidden z-50">
+						<button id="menu-profile-btn" type="button"
+							class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2 cursor-pointer">
+							<i class="fa-solid fa-user text-slate-400"></i>
+							<span>Profile</span>
+						</button>
+						<button id="menu-privacy-btn" type="button"
+							class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2 cursor-pointer">
+							<i class="fa-solid fa-lock text-slate-400"></i>
+							<span>Privacy & Settings</span>
+						</button>
+						<div class="border-t border-slate-100 my-1"></div>
+						<button id="menu-logout-btn" type="button"
+							class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-100 flex items-center space-x-2 cursor-pointer">
+							<i class="fa-solid fa-right-from-bracket text-red-400"></i>
+							<span>Log Out</span>
+						</button>
+					</div>
+				</div>
 			</nav>
 		</header>
 
@@ -186,6 +224,7 @@
 			getFirestore,
 			doc,
 			setDoc,
+			getDoc,
 			collection,
 			getDocs
 		} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -287,6 +326,8 @@
 		// --- SIGN UP LOGIC ---
 		const passwordInput = document.getElementById('signup-password');
 		const emailInput = document.getElementById('signup-email');
+		const studentIdInput = document.getElementById('signup-studentid');
+		const courseInput = document.getElementById('signup-course');
 		const emailHint = document.getElementById('email-hint');
 		const signupBtn = document.getElementById('signup-btn');
 		const passwordChecklist = document.getElementById('password-checklist');
@@ -297,7 +338,9 @@
 		const reqAlphanumeric = document.getElementById('req-alphanumeric');
 
 		signupBtn.addEventListener('click', async () => {
-			const emailVal = emailInput.value;
+			const emailVal = emailInput.value.trim();
+			const studentIdVal = studentIdInput.value.trim();
+			const courseVal = courseInput.value.trim();
 			const passVal = passwordInput.value;
 
 			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -323,8 +366,8 @@
 			updateRequirementUI(reqUppercase, hasUppercase, "At least one uppercase letter (A-Z)");
 			updateRequirementUI(reqAlphanumeric, isAlphanumeric, "Only letters and numbers (no symbols)");
 
-			if (!isEmailValid || !isPasswordValid) {
-				signupError.innerText = "Please fix the highlighted fields above before signing up.";
+			if (!isEmailValid || !isPasswordValid || !studentIdVal || !courseVal) {
+				signupError.innerText = "Please fill in all fields (Student ID and Course are required).";
 				signupError.classList.remove('hidden');
 				return;
 			}
@@ -333,8 +376,11 @@
 
 			try {
 				const userCredential = await createUserWithEmailAndPassword(auth, emailVal, passVal);
+				// Permanently store student info in Firestore
 				await setDoc(doc(db, "users", userCredential.user.uid), {
 					email: userCredential.user.email,
+					studentId: studentIdVal,
+					course: courseVal,
 					role: "user"
 				});
 				alert("Account created successfully!");
@@ -369,33 +415,6 @@
 			}
 		});
 
-		// --- LOG OUT LOGIC ---
-		const logoutBtn = document.getElementById('logout-btn');
-		if (logoutBtn) {
-			logoutBtn.addEventListener('click', async () => {
-				try {
-					await signOut(auth);
-				} catch (error) {
-					console.error("Error logging out", error);
-				}
-			});
-		}
-
-		// --- GATEKEEPER (Toggles between Auth screen and Main Portal) ---
-		onAuthStateChanged(auth, (user) => {
-			const authContainer = document.getElementById('auth-container');
-			const portalContainer = document.getElementById('portal-container');
-
-			if (user) {
-				authContainer.style.display = 'none';
-				portalContainer.style.display = 'block';
-				fetchCloudReports(); // Fetch live database records on login!
-			} else {
-				authContainer.style.display = 'flex';
-				portalContainer.style.display = 'none';
-			}
-		})
-
 		// --- FORGOT PASSWORD LOGIC ---
 		const forgotBtn = document.getElementById('forgot-password-btn');
 		const forgotMsg = document.getElementById('forgot-password-msg');
@@ -423,7 +442,103 @@
 				}
 			});
 		}
-		;
+
+		// --- PROFILE DROPDOWN & AVATAR TOGGLE LOGIC ---
+		const profileMenuBtn = document.getElementById('profile-menu-btn');
+		const profileDropdown = document.getElementById('profile-dropdown');
+
+		if (profileMenuBtn && profileDropdown) {
+			profileMenuBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				profileDropdown.classList.toggle('hidden');
+			});
+
+			// Close dropdown when clicking anywhere outside
+			document.addEventListener('click', () => {
+				if (!profileDropdown.classList.contains('hidden')) {
+					profileDropdown.classList.add('hidden');
+				}
+			});
+
+			profileDropdown.addEventListener('click', (e) => {
+				e.stopPropagation();
+			});
+		}
+
+		// --- DROPDOWN MENU REDIRECT ACTIONS ---
+		document.getElementById('menu-profile-btn').addEventListener('click', () => {
+			profileDropdown.classList.add('hidden');
+			window.location.href = 'profile.html';
+		});
+
+		document.getElementById('menu-privacy-btn').addEventListener('click', () => {
+			profileDropdown.classList.add('hidden');
+			window.location.href = 'settings.html';
+		});
+
+		document.getElementById('menu-logout-btn').addEventListener('click', async () => {
+			try {
+				await signOut(auth);
+			} catch (error) {
+				console.error("Error logging out", error);
+			}
+		});
+
+		// --- UNIFIED GATEKEEPER & AVATAR LOADER ---
+		onAuthStateChanged(auth, async (user) => {
+			const authContainer = document.getElementById('auth-container');
+			const portalContainer = document.getElementById('portal-container');
+
+			if (user) {
+				// 1. Check if legacy user is missing their permanent student ID
+				try {
+					const userDocSnap = await getDoc(doc(db, "users", user.uid));
+					if (!userDocSnap.exists() || !userDocSnap.data().studentId) {
+						window.location.href = 'complete-profile.html';
+						return;
+					}
+				} catch (err) {
+					console.error("Error checking profile completion:", err);
+				}
+
+				authContainer.style.display = 'none';
+				portalContainer.style.display = 'block';
+				fetchCloudReports();
+
+				// --- Load User Avatar / Initial ---
+				const avatarImg = document.getElementById('user-avatar-img');
+				const avatarLetter = document.getElementById('user-avatar-letter');
+
+				try {
+					const userDocSnap = await getDoc(doc(db, "users", user.uid));
+					let profilePicUrl = null;
+					let userEmail = user.email || "";
+
+					if (userDocSnap.exists()) {
+						profilePicUrl = userDocSnap.data().profilePic;
+					}
+
+					if (profilePicUrl) {
+						avatarImg.src = profilePicUrl;
+						avatarImg.classList.remove('hidden');
+						avatarLetter.classList.add('hidden');
+					} else {
+						avatarImg.classList.add('hidden');
+						avatarLetter.classList.remove('hidden');
+						avatarLetter.innerText = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
+					}
+				} catch (err) {
+					console.error("Error loading user profile data:", err);
+					avatarLetter.innerText = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+				}
+
+			} else {
+				authContainer.style.display = 'flex';
+				portalContainer.style.display = 'none';
+			}
+		});
+
+
 	</script>
 </body>
 

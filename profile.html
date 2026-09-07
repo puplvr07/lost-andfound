@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>My Profile - Lost & Found</title>
+</head>
+
+<body class="bg-slate-100 min-h-screen">
+
+    <!-- HEADER / NAVBAR -->
+    <header
+        class="p-4 sm:px-6 flex justify-between items-center bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+        <div class="flex items-center space-x-2">
+            <span class="font-bold text-xl text-indigo-600">Lost and Found Portal</span>
+        </div>
+        <nav class="flex items-center space-x-6">
+            <a class="text-slate-600 hover:text-indigo-600 font-medium" href="index.html">Home</a>
+            <a class="text-slate-600 hover:text-indigo-600 font-medium" href="report_form.html">Create a Post</a>
+            <a class="text-indigo-600 font-semibold" href="profile.html">Profile</a>
+            <a class="text-slate-600 hover:text-indigo-600 font-medium" href="settings.html">Settings</a>
+        </nav>
+    </header>
+
+    <!-- PROFILE CONTAINER -->
+    <main class="max-w-4xl mx-auto p-4 sm:p-6 space-y-8 mt-6">
+
+        <!-- Profile Header Card (Permanent Details) -->
+        <div
+            class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+
+            <!-- Avatar Section -->
+            <div class="relative group">
+                <div
+                    class="w-28 h-28 rounded-full bg-indigo-600 text-white text-3xl font-bold flex items-center justify-center overflow-hidden shadow-md border-4 border-white">
+                    <img id="profile-avatar-img" src="" alt="Profile" class="w-full h-full object-cover hidden">
+                    <span id="profile-avatar-letter">U</span>
+                </div>
+                <!-- Change Photo Overlay Button -->
+                <label for="avatar-file-input"
+                    class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-medium">
+                    <i class="fa-solid fa-camera mr-1"></i> Change
+                </label>
+                <input type="file" id="avatar-file-input" accept="image/*" class="hidden">
+            </div>
+
+            <!-- User Info Section -->
+            <div class="text-center sm:text-left space-y-2 flex-grow">
+                <h1 id="profile-studentid" class="text-2xl font-bold text-slate-800">Loading Student ID...</h1>
+                <p class="text-sm text-slate-500 font-medium"><i
+                        class="fa-solid fa-graduation-cap mr-1.5 text-indigo-500"></i><span id="profile-course">Loading
+                        course...</span></p>
+                <p class="text-sm text-slate-500 font-medium"><i
+                        class="fa-solid fa-envelope mr-1.5 text-indigo-500"></i><span id="profile-email">Loading
+                        email...</span> (Permanent Identifier)</p>
+            </div>
+        </div>
+
+        <!-- User's Submitted Posts Feed -->
+        <div class="space-y-4">
+            <h2 class="text-xl font-bold text-slate-800">My Submitted Posts</h2>
+            <div id="user-posts-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <!-- Dynamic Posts Will Load Here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- FIREBASE & PROFILE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJuZdbS3vK9stg0lIgmYAM3KQnPhPjhA4",
+            authDomain: "lost-andfound-8f654.firebaseapp.com",
+            projectId: "lost-andfound-8f654",
+            storageBucket: "lost-andfound-8f654.firebasestorage.app",
+            messagingSenderId: "1053006563820",
+            appId: "1:1053006563820:web:9041225d6f4730242458c9",
+            measurementId: "G-BX4ZNYP9H5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Check if URL has a target user parameter (e.g. profile.html?uid=XYZ)
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetUid = urlParams.get('uid') || user.uid;
+
+            const userRef = doc(db, "users", targetUid);
+            let userDoc = await getDoc(userRef);
+
+            let studentId = "Student";
+            let course = "N/A";
+            let profilePic = "";
+            let email = "Identifier hidden";
+
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                studentId = data.studentId || "Student";
+                course = data.course || "N/A";
+                profilePic = data.profilePic || "";
+                email = data.email || "";
+            }
+
+            // Populate Profile UI
+            const avatarImg = document.getElementById('profile-avatar-img');
+            const avatarLetter = document.getElementById('profile-avatar-letter');
+
+            document.getElementById('profile-studentid').innerText = studentId;
+            document.getElementById('profile-course').innerText = course;
+            document.getElementById('profile-email').innerText = email;
+
+            if (profilePic > profilePic) { // Or simply if (profilePic)
+                avatarImg.src = profilePic;
+                avatarImg.classList.remove('hidden');
+                avatarLetter.classList.add('hidden');
+            } else {
+                avatarLetter.innerText = studentId.charAt(0).toUpperCase();
+            }
+
+            // If viewing someone else's profile, hide the avatar change upload option
+            if (targetUid !== user.uid) {
+                const uploadLabel = document.querySelector('label[for="avatar-file-input"]');
+                if (uploadLabel) uploadLabel.style.display = 'none';
+            }
+
+            fetchUserPosts(targetUid);
+        });
+
+        // Handle Avatar Change Upload Only
+        document.getElementById('avatar-file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                const base64Img = await fileToBase64(file);
+                const userRef = doc(db, "users", auth.currentUser.uid);
+                await setDoc(userRef, { profilePic: base64Img }, { merge: true });
+                window.location.reload();
+            } catch (err) {
+                console.error("Error uploading picture:", err);
+            }
+        });
+
+        async function fetchUserPosts(uid) {
+            const grid = document.getElementById('user-posts-grid');
+            try {
+                const q = query(collection(db, "reports"), where("userId", "==", uid));
+                const querySnapshot = await getDocs(q);
+
+                let postsHtml = "";
+                querySnapshot.forEach((docSnap) => {
+                    const item = docSnap.data();
+                    const typeColor = item.type === 'Lost' ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100';
+                    const imageSrc = item.img || "https://via.placeholder.com/150/aaaaaa/ffffff?text=No+Image";
+
+                    postsHtml += `
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200 flex flex-col">
+                            <img src="${imageSrc}" alt="${item.name}" class="w-full h-36 object-cover">
+                            <div class="p-4 flex flex-col flex-grow">
+                                <div class="flex justify-between items-start mb-1">
+                                    <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${typeColor}">${item.type}</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mb-2">${item.category} • ${item.date}</p>
+                                <p class="text-xs text-slate-600 line-clamp-2 mt-auto">${item.description}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                grid.innerHTML = postsHtml || "<p class='text-sm text-slate-500 col-span-full'>You haven't submitted any posts yet.</p>";
+            } catch (err) {
+                console.error("Error fetching user posts:", err);
+                grid.innerHTML = "<p class='text-sm text-red-500 col-span-full'>Error loading your posts.</p>";
+            }
+        }
+    </script>
+</body>
+
+</html>
