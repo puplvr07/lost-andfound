@@ -8,13 +8,13 @@ tailwind.config = {
 
                 primary: {
 
-                    DEFAULT: "#4f46e5",
+                    DEFAULT: "#232b4e",
 
-                    light: "#6366f1",
+                    light: "#356cbe",
 
                 },
 
-                secondary: "#ec4899",
+                secondary: "#48bdec",
 
                 "background-light": "#f8fafc",
 
