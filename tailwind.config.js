@@ -10,7 +10,7 @@ tailwind.config = {
                 "background-light": "#f8fafc",
             },
             fontFamily: {
-                display: ["Quicksand", "sans-serif"],
+                display: ["SFMono-Regular", "monospace"],
             },
             borderRadius: {
                 DEFAULT: "0.5rem",
