@@ -124,7 +124,7 @@
         // 1. Import Firebase SDKs (Added getAuth here)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // 2. Your project configuration keys
         const firebaseConfig = {
@@ -207,6 +207,7 @@
                 img: photoData,
                 description: itemForm.elements['description'].value.trim(),
                 contact: itemForm.elements['contact'].value.trim(),
+                status: 'active',
                 createdAt: new Date()
             };
 

@@ -9,16 +9,21 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Rules for your lost and found posts
-    match /posts/{postId} {
-      // Anyone can view active posts
+    // Rules for lost and found reports
+    match /reports/{reportId} {
+      // Reports are visible to signed-in users through the portal.
       allow read: if true;
-      
-      // Logged-in users can create new posts
+
       allow create: if request.auth != null;
-      
-      // ONLY ADMINS can update (archive/resolve) or delete posts
-      allow update, delete: if isAdmin();
+
+      // Only the original poster can mark their own report as resolved.
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.status == 'resolved'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'resolvedAt']);
+
+      allow delete: if false;
     }
     
     // Rules for user profiles
