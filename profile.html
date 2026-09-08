@@ -172,6 +172,8 @@
                 let postsHtml = "";
                 querySnapshot.forEach((docSnap) => {
                     const item = docSnap.data();
+                    if (item.status === 'resolved') return;
+
                     const typeColor = item.type === 'Lost' ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100';
                     const imageSrc = item.img || "https://via.placeholder.com/150/aaaaaa/ffffff?text=No+Image";
 
