@@ -1,0 +1,107 @@
+:root {
+    --primary: #232b4e;
+    --primary-light: #356cbe;
+    --secondary: #48bdec;
+    --background-light: #f8fafc;
+    --body: #1c3455;
+    --muted: #5676a3;
+    --subtle: #94a3b8;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --success: #16a34a;
+    --success-light: #dcfce7;
+    --portal: #232b4e;
+    --contact: #356cbe;
+    --profile-background: #232b4e;
+    --home: #64748b;
+    --home-hover: #356cbe;
+    --create-post: #64748b;
+    --create-post-hover: #356cbe;
+    --report-title: #232b4e;
+    --search-list: #356cbe;
+    --search-list-hover: #48bdec;
+    --radius-default: 0.5rem;
+    --radius-xl: 1rem;
+}
+
+body,
+.font-display {
+    font-family: SFMono-Regular, monospace;
+}
+
+.bg-background-light { background-color: var(--background-light); }
+.bg-primary { background-color: var(--primary); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-profile-background { background-color: var(--profile-background); }
+.bg-danger-light { background-color: var(--danger-light); }
+.bg-success-light { background-color: var(--success-light); }
+.bg-success { background-color: var(--success); }
+.bg-primary\/10 { background-color: color-mix(in srgb, var(--primary) 10%, transparent); }
+.bg-primary\/20 { background-color: color-mix(in srgb, var(--primary) 20%, transparent); }
+
+.text-primary { color: var(--primary); }
+.text-primary-light { color: var(--primary-light); }
+.text-secondary { color: var(--secondary); }
+.text-body { color: var(--body); }
+.text-muted { color: var(--muted); }
+.text-subtle { color: var(--subtle); }
+.text-danger { color: var(--danger); }
+.text-success { color: var(--success); }
+.text-on-primary { color: #fff; }
+.text-portal { color: var(--portal); }
+.text-contact { color: var(--contact); }
+.text-home { color: var(--home); }
+.text-create-post { color: var(--create-post); }
+.text-report-title { color: var(--report-title); }
+.text-search-list { color: var(--search-list); }
+
+.hover\:bg-primary-light:hover { background-color: var(--primary-light); }
+.hover\:bg-primary\/20:hover { background-color: color-mix(in srgb, var(--primary) 20%, transparent); }
+.hover\:text-body:hover { color: var(--body); }
+.hover\:text-primary:hover,
+.hover\:text-primary-light:hover { color: var(--primary-light); }
+.hover\:text-home-hover:hover { color: var(--home-hover); }
+.hover\:text-create-post-hover:hover { color: var(--create-post-hover); }
+.hover\:text-search-list-hover:hover { color: var(--search-list-hover); }
+
+.focus\:ring-primary-light:focus,
+.focus\:ring-secondary:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-light) 35%, transparent);
+}
+
+.focus\:border-primary-light:focus { border-color: var(--primary-light); }
+
+#portal-container > header,
+body > header {
+    background-color: #fff;
+    border-bottom-color: #e2e8f0;
+}
+
+#profile-dropdown {
+    background-color: #fff;
+    border-color: #e2e8f0;
+}
+
+#searchInput,
+#categoryInput {
+    background-color: #fff;
+    border-color: #cbd5e1;
+}
+
+#resultsGrid > div,
+#user-posts-grid > div {
+    background-color: #fff;
+    border-color: #e2e8f0;
+}
+
+#item-form input:focus,
+#item-form select:focus,
+#item-form textarea:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-light) 35%, transparent);
+}
+
+#app > div,
+main > div:first-child {
+    background-color: #fff;
+}
