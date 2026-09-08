@@ -1,3 +1,4 @@
+var tailwind = window.tailwind || {};
 tailwind.config = {
     theme: {
         extend: {
@@ -8,8 +9,8 @@ tailwind.config = {
                 },
                 secondary: "#48bdec",
                 "background-light": "#f8fafc",
-                body: "#334155",
-                muted: "#64748b",
+                body: "#1c3455",
+                muted: "#5676a3",
                 subtle: "#94a3b8",
                 danger: "#ef4444",
                 "danger-light": "#fee2e2",
